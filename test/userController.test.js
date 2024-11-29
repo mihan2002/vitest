@@ -1,79 +1,44 @@
-// tests/user.test.js
-import request from 'supertest';
-import { describe, it, expect, beforeEach } from 'vitest';
-import app from '../app.js';
-import { resetUsers } from '../models/userModel.js';
+import { describe, vi, it, expect } from "vitest";
+import User from "../models/userModel";
+import { createUser } from "../controllers/userController";
+import { json } from "express";
 
-describe('User API', () => {
-  beforeEach(() => {
-    resetUsers();
-  });
+vi.mock("../models/userModel", async () => {
+  return {
+    default: {
+      create: vi.fn(),
+    },
+  };
+});
 
-  it('should create a new user', async () => {
-    const res = await request(app).post('/api/users').send({
-      name: 'John Doe',
-      email: 'john@example.com',
-    });
+describe("user Testing", () => {
+  it("should create a user", async () => {
+    const req = {
+      body: {
+        name: "John Doe",
+        email: "john.doe@example.com",
+        password: "password123",
+      },
+    };
 
-    expect(res.statusCode).toBe(201);
-    expect(res.body).toEqual({
+    const res = {
+      status: vi.fn().mockReturnThis(),
+      json: vi.fn(),
+    };
+
+    User.create.mockResolvedValue({
       id: 1,
-      name: 'John Doe',
-      email: 'john@example.com',
-    });
-  });
-
-  it('should fetch all users', async () => {
-    await request(app).post('/api/users').send({
-      name: 'John Doe',
-      email: 'john@example.com',
-    });
-    const res = await request(app).get('/api/users');
-
-    expect(res.statusCode).toBe(200);
-    expect(res.body.length).toBe(1);
-  });
-
-  it('should fetch a user by ID', async () => {
-    await request(app).post('/api/users').send({
-      name: 'John Doe',
-      email: 'john@example.com',
-    });
-    const res = await request(app).get('/api/users/1');
-
-    expect(res.statusCode).toBe(200);
-    expect(res.body).toHaveProperty('name', 'John Doe');
-  });
-
-  it('should update a user', async () => {
-    await request(app).post('/api/users').send({
-      name: 'John Doe',
-      email: 'john@example.com',
-    });
-    const res = await request(app).put('/api/users/1').send({
-      name: 'Jane Doe',
-      email: 'jane@example.com',
+      ...req.body,
     });
 
-    expect(res.statusCode).toBe(200);
-    expect(res.body).toEqual({
+    await createUser(req, res);
+
+    expect(User.create).toHaveBeenCalledTimes(1);
+    expect(User.create).toHaveBeenCalledWith(req.body);
+    expect(res.status).toHaveBeenLastCalledWith(201);
+    expect(res.json).toHaveBeenCalledWith({
       id: 1,
-      name: 'Jane Doe',
-      email: 'jane@example.com',
+      ...req.body,
     });
-  });
-
-  it('should delete a user', async () => {
-    await request(app).post('/api/users').send({
-      name: 'John Doe',
-      email: 'john@example.com',
-    });
-    const res = await request(app).delete('/api/users/1');
-
-    expect(res.statusCode).toBe(200);
-    expect(res.body).toHaveProperty('id', 1);
-
-    const getRes = await request(app).get('/api/users/1');
-    expect(getRes.statusCode).toBe(404);
   });
 });

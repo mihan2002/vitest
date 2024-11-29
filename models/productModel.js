@@ -1,42 +1,16 @@
 // models/productModel.js
 
-let products = [];
-let idCounter = 1;
+import mongoose from 'mongoose';
 
-export const createProduct = (productData) => {
-  const newProduct = { id: idCounter++, ...productData };
-  products.push(newProduct);
-  return newProduct;
-};
+const productSchema = new mongoose.Schema(
+  {
+    name: { type: String, required: true },
+    price: { type: Number, required: true },
+    stock: { type: Number, default: 0 },
+  },
+  { timestamps: true }
+);
 
-export const getProducts = () => {
-  return products;
-};
+const Product = mongoose.model('Product', productSchema);
 
-export const getProductById = (id) => {
-  return products.find((product) => product.id === Number(id));
-};
-
-export const updateProduct = (id, productData) => {
-  const index = products.findIndex((product) => product.id === Number(id));
-  if (index !== -1) {
-    products[index] = { id: Number(id), ...productData };
-    return products[index];
-  }
-  return null;
-};
-
-export const deleteProduct = (id) => {
-  const index = products.findIndex((product) => product.id === Number(id));
-  if (index !== -1) {
-    const deletedProduct = products.splice(index, 1);
-    return deletedProduct[0];
-  }
-  return null;
-};
-
-// For testing purposes
-export const resetProducts = () => {
-  products = [];
-  idCounter = 1;
-};
+export default Product;
