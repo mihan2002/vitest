@@ -1,7 +1,7 @@
 import { describe, vi, it, expect } from "vitest";
 import User from "../models/userModel";
 import { createUser } from "../controllers/userController";
-import { json } from "express";
+
 
 vi.mock("../models/userModel", async () => {
   return {
@@ -12,7 +12,7 @@ vi.mock("../models/userModel", async () => {
 });
 
 describe("user Testing", () => {
-  it("should create a user", async () => {
+  it("should create a user with correct data", async () => {
     const req = {
       body: {
         name: "John Doe",
